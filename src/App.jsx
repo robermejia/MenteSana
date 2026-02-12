@@ -49,9 +49,11 @@ function App() {
 
   const handleLoginSuccess = (userData) => {
     setUser(userData);
+    showToast(`¡Bienvenido, ${userData.displayName || 'Usuario'}!`);
   };
 
   const showToast = (message, type = 'success') => {
+    console.log(`[Toast] ${type}: ${message}`);
     if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
     setToast({ message, type, removing: false });
     
