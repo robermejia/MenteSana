@@ -303,6 +303,7 @@ function App() {
     {/* Toast rendering fuera del container principal para evitar clipping */}
     {toast && (
       <div className="toast-container">
+        {console.log("Rendering Toast UI component:", toast)}
         <div className={`toast ${toast.type} ${toast.removing ? 'removing' : ''}`}>
           {toast.type === 'error' ? <AlertCircle size={20} style={{ color: '#ef4444' }} /> : 
            toast.type === 'warning' ? <AlertCircle size={20} style={{ color: '#f59e0b' }} /> : 
