@@ -44,15 +44,17 @@ export const subscribeToRegistros = (userId, callback) => {
     );
 
     return onSnapshot(q, (snapshot) => {
+        console.log(`[Firestore] Recibidos ${snapshot.docs.length} documentos para el usuario ${userId}`);
         const registros = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data(),
-            // Mantenemos la fecha formateada si existe en el doc, 
-            // o usamos la guardada originalmente
         }));
         callback(registros);
     }, (error) => {
         console.error("Error en la suscripción de Firestore:", error);
+        if (error.code === 'failed-precondition') {
+            console.warn("Falta un índice en Firestore para esta consulta. Revisa el link en el error de arriba.");
+        }
     });
 };
 
