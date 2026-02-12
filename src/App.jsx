@@ -100,17 +100,20 @@ function App() {
   };
 
   const handleSaveRegistro = async (nuevoRegistro) => {
+    console.log("Iniciando guardado de registro...", { isDemo: user?.isDemo, isEditing: !!editingRegistro });
     try {
+      const isEditing = !!editingRegistro;
+      
       if (user && !user.isDemo) {
+        console.log("Guardando en Firestore...");
         if (editingRegistro) {
-          // Actualizar en Firestore
           await updateRegistro(editingRegistro.id, nuevoRegistro);
         } else {
-          // Crear en Firestore
           await addRegistro(user.uid, nuevoRegistro);
         }
+        console.log("Firestore respondió con éxito.");
       } else {
-        // Modo Demo (LocalStorage)
+        console.log("Guardando en LocalStorage (Modo Demo)...");
         if (editingRegistro) {
           setLocalRegistros(localRegistros.map(r => r.id === editingRegistro.id ? { ...nuevoRegistro, id: editingRegistro.id } : r));
         } else {
@@ -118,12 +121,12 @@ function App() {
         }
       }
       
-      const isEditing = !!editingRegistro;
       setEditingRegistro(null);
+      console.log("Llamando a showToast...");
       showToast(isEditing ? 'Registro actualizado correctamente' : 'Registro guardado correctamente');
       
-      // Pequeño retraso para asegurar que la notificación se vea antes de cambiar de pestaña si el render es pesado
       setTimeout(() => {
+        console.log("Cambiando pestaña a estadisticas.");
         setActiveTab('estadisticas');
       }, 100);
     } catch (error) {
