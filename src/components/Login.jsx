@@ -3,7 +3,7 @@ import { auth, googleProvider } from '../firebase';
 import { signInWithPopup } from 'firebase/auth';
 import { LogIn, Heart, ShieldCheck, Zap, BarChart3 } from 'lucide-react';
 
-export default function Login({ onLoginSuccess }) {
+export default function Login({ onLoginSuccess, showToast }) {
   const handleGoogleLogin = async () => {
     try {
       // Nota: Esto fallará hasta que configures las credenciales reales en firebase.js
@@ -12,9 +12,9 @@ export default function Login({ onLoginSuccess }) {
     } catch (error) {
       console.error("Error al iniciar sesión con Google:", error);
       if (error.code === 'auth/invalid-api-key') {
-        alert("Configuración requerida: Por favor, edita 'src/firebase.js' con tus credenciales de Firebase para habilitar el inicio de sesión.");
+        showToast("Configuración requerida: Por favor, edita 'src/firebase.js' con tus credenciales de Firebase.", "error");
       } else {
-        alert("Ocurrió un error al intentar iniciar sesión. Revisa la consola para más detalles.");
+        showToast("Ocurrió un error al intentar iniciar sesión.", "error");
       }
     }
   };

@@ -3,7 +3,7 @@ import { useLocalStorage } from './hooks/useLocalStorage';
 import RegistroForm from './components/RegistroForm';
 import Estadisticas from './components/Estadisticas';
 import Login from './components/Login';
-import { Layout, PlusCircle, BarChart3, Heart, LogOut, User as UserIcon } from 'lucide-react';
+import { Layout, PlusCircle, BarChart3, Heart, LogOut, User as UserIcon, CheckCircle2, AlertCircle, X, Info } from 'lucide-react';
 import { auth } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { addRegistro, subscribeToRegistros, updateRegistro, deleteRegistro } from './services/firestoreService';
@@ -14,6 +14,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editingRegistro, setEditingRegistro] = useState(null);
+  const [toast, setToast] = useState(null);
 
   // Cargar datos locales solo si no hay usuario (Demo)
   const [localRegistros, setLocalRegistros] = useLocalStorage('tcc-registros', []);
@@ -49,6 +50,14 @@ function App() {
     setUser(userData);
   };
 
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    // El desvanecimiento por CSS ocurre a los 2.7s por lo que limpiamos el estado un poco después
+    setTimeout(() => {
+      setToast(null);
+    }, 3500);
+  };
+
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -76,7 +85,7 @@ function App() {
       }
     } catch (error) {
       console.error("Error al eliminar:", error);
-      alert('Error al eliminar el registro');
+      showToast('Error al eliminar el registro', 'error');
     }
   };
 
@@ -99,19 +108,20 @@ function App() {
         }
       }
       
+      const isEditing = !!editingRegistro;
       setEditingRegistro(null);
-      alert(editingRegistro ? 'Registro actualizado correctamente' : 'Registro guardado correctamente');
+      showToast(isEditing ? 'Registro actualizado correctamente' : 'Registro guardado correctamente');
       setActiveTab('estadisticas');
     } catch (error) {
       console.error("Error al guardar:", error);
-      alert('Error al guardar el registro');
+      showToast('Error al guardar el registro', 'error');
     }
   };
 
   const handleExportData = () => {
     try {
       if (registros.length === 0) {
-        alert("No hay datos para exportar.");
+        showToast("No hay datos para exportar.", "warning");
         return;
       }
       
@@ -126,7 +136,7 @@ function App() {
       linkElement.click();
     } catch (error) {
       console.error("Error al exportar:", error);
-      alert("Error al exportar los datos.");
+      showToast("Error al exportar los datos.", "error");
     }
   };
 
@@ -156,10 +166,10 @@ function App() {
         setLocalRegistros([...localRegistros, ...nuevosRegistros]);
       }
       
-      alert("Datos importados con éxito.");
+      showToast("Datos importados con éxito.");
     } catch (error) {
       console.error("Error al importar:", error);
-      alert("Error al importar los datos: " + error.message);
+      showToast("Error al importar los datos: " + error.message, "error");
     }
   };
 
@@ -172,7 +182,7 @@ function App() {
   }
 
   if (!user) {
-    return <Login onLoginSuccess={handleLoginSuccess} />;
+    return <Login onLoginSuccess={handleLoginSuccess} showToast={showToast} />;
   }
 
   return (
@@ -243,6 +253,7 @@ function App() {
             onDelete={handleDeleteRegistro}
             onExport={handleExportData}
             onImport={handleImportData}
+            showToast={showToast}
           />
         )}
       </main>
@@ -266,6 +277,23 @@ function App() {
           .user-info { display: block !important; }
         }
       `}</style>
+      {/* Renderizado de Toast */}
+      {toast && (
+        <div className="toast-container">
+          <div className={`toast ${toast.type}`}>
+            {toast.type === 'error' ? <AlertCircle size={20} style={{ color: '#ef4444' }} /> : 
+             toast.type === 'warning' ? <AlertCircle size={20} style={{ color: '#f59e0b' }} /> : 
+             <CheckCircle2 size={20} style={{ color: '#10b981' }} />}
+            <span style={{ flex: 1 }}>{toast.message}</span>
+            <button 
+              onClick={() => setToast(null)} 
+              style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex' }}
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

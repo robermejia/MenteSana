@@ -15,7 +15,7 @@ const MOODS_META = {
   neutro: { label: 'Neutro', color: '#64748b' },
 };
 
-export default function Estadisticas({ registros, onEdit, onDelete, onExport, onImport }) {
+export default function Estadisticas({ registros, onEdit, onDelete, onExport, onImport, showToast }) {
   const fileInputRef = React.useRef(null);
 
   const handleFileChange = (event) => {
@@ -27,7 +27,7 @@ export default function Estadisticas({ registros, onEdit, onDelete, onExport, on
           const json = JSON.parse(e.target.result);
           onImport(json);
         } catch (err) {
-          alert("Error al leer el archivo JSON: " + err.message);
+          showToast("Error al leer el archivo JSON: " + err.message, "error");
         }
       };
       reader.readAsText(file);
