@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import RegistroForm from './components/RegistroForm';
 import Estadisticas from './components/Estadisticas';
@@ -15,6 +15,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [editingRegistro, setEditingRegistro] = useState(null);
   const [toast, setToast] = useState(null);
+  const toastTimeoutRef = useRef(null);
 
   // Cargar datos locales solo si no hay usuario (Demo)
   const [localRegistros, setLocalRegistros] = useLocalStorage('tcc-registros', []);
@@ -51,11 +52,18 @@ function App() {
   };
 
   const showToast = (message, type = 'success') => {
-    setToast({ message, type });
-    // El desvanecimiento por CSS ocurre a los 2.7s por lo que limpiamos el estado un poco después
-    setTimeout(() => {
-      setToast(null);
-    }, 3500);
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    setToast({ message, type, removing: false });
+    
+    // Iniciar desaparición a los 3s
+    toastTimeoutRef.current = setTimeout(() => {
+      setToast(prev => prev ? { ...prev, removing: true } : null);
+      
+      // Eliminar del DOM después de la animación de salida (0.3s)
+      toastTimeoutRef.current = setTimeout(() => {
+        setToast(null);
+      }, 300);
+    }, 3000);
   };
 
   const handleLogout = async () => {
@@ -186,6 +194,7 @@ function App() {
   }
 
   return (
+    <>
     <div className="container">
       <header style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '1.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -277,24 +286,26 @@ function App() {
           .user-info { display: block !important; }
         }
       `}</style>
-      {/* Renderizado de Toast */}
-      {toast && (
-        <div className="toast-container">
-          <div className={`toast ${toast.type}`}>
-            {toast.type === 'error' ? <AlertCircle size={20} style={{ color: '#ef4444' }} /> : 
-             toast.type === 'warning' ? <AlertCircle size={20} style={{ color: '#f59e0b' }} /> : 
-             <CheckCircle2 size={20} style={{ color: '#10b981' }} />}
-            <span style={{ flex: 1 }}>{toast.message}</span>
-            <button 
-              onClick={() => setToast(null)} 
-              style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex' }}
-            >
-              <X size={16} />
-            </button>
-          </div>
-        </div>
-      )}
     </div>
+
+    {/* Toast rendering fuera del container principal para evitar clipping */}
+    {toast && (
+      <div className="toast-container">
+        <div className={`toast ${toast.type} ${toast.removing ? 'removing' : ''}`}>
+          {toast.type === 'error' ? <AlertCircle size={20} style={{ color: '#ef4444' }} /> : 
+           toast.type === 'warning' ? <AlertCircle size={20} style={{ color: '#f59e0b' }} /> : 
+           <CheckCircle2 size={20} style={{ color: '#10b981' }} />}
+          <span style={{ flex: 1 }}>{toast.message}</span>
+          <button 
+            onClick={() => setToast(null)} 
+            style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex' }}
+          >
+            <X size={16} />
+          </button>
+        </div>
+      </div>
+    )}
+  </>
   );
 }
 
