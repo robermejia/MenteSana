@@ -282,7 +282,7 @@ export default function Estadisticas({ registros, onEdit, onDelete, onExport, on
                     </tr>
                 </thead>
                 <tbody>
-                    {registros.slice().reverse().slice(0, 8).map(r => (
+                    {registros.map(r => (
                         <tr key={r.id} style={{ borderBottom: '1px solid var(--border)' }}>
                             <td style={{ padding: '0.75rem' }}>{r.fechaFormateada}</td>
                             <td style={{ padding: '0.75rem' }}>

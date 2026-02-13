@@ -46,8 +46,8 @@ export const subscribeToRegistros = (userId, callback) => {
     return onSnapshot(q, (snapshot) => {
         console.log(`[Firestore] Recibidos ${snapshot.docs.length} documentos para el usuario ${userId}`);
         const registros = snapshot.docs.map(doc => ({
-            id: doc.id,
             ...doc.data(),
+            id: doc.id,
         }));
         callback(registros);
     }, (error) => {
@@ -63,7 +63,7 @@ export const subscribeToRegistros = (userId, callback) => {
  */
 export const deleteRegistro = async (registroId) => {
     try {
-        await deleteDoc(doc(db, COLLECTION_NAME, registroId));
+        await deleteDoc(doc(db, COLLECTION_NAME, String(registroId)));
     } catch (error) {
         console.error("Error al eliminar registro:", error);
         throw error;
@@ -75,7 +75,7 @@ export const deleteRegistro = async (registroId) => {
  */
 export const updateRegistro = async (registroId, updateData) => {
     try {
-        const docRef = doc(db, COLLECTION_NAME, registroId);
+        const docRef = doc(db, COLLECTION_NAME, String(registroId));
         await updateDoc(docRef, {
             ...updateData,
             updatedAt: serverTimestamp()

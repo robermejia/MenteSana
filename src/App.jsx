@@ -36,10 +36,13 @@ function App() {
 
     if (user && !user.isDemo) {
       unsubscribeFirestore = subscribeToRegistros(user.uid, (data) => {
+        // Firestore ya viene ordenado por createdAt desc
         setRegistros(data);
       });
     } else if (user?.isDemo) {
-      setRegistros(localRegistros);
+      // Ordenar Demo por ID (Date.now()) descendente para que los nuevos salgan arriba
+      const sortedLocal = [...localRegistros].sort((a, b) => b.id - a.id);
+      setRegistros(sortedLocal);
     } else {
       setRegistros([]);
     }
@@ -85,17 +88,33 @@ function App() {
   };
 
   const handleDeleteRegistro = async (registroId) => {
+    console.log("Intentando eliminar registro con ID:", registroId);
+    if (!registroId) {
+      showToast('Error: No se encontró el ID del registro', 'error');
+      return;
+    }
+
     if (!window.confirm('¿Estás seguro de que deseas eliminar este registro?')) return;
     
+    // Actualización optimista: lo quitamos de la UI inmediatamente
+    const originalRegistros = [...registros];
+    setRegistros(prev => prev.filter(r => String(r.id) !== String(registroId)));
+
     try {
       if (user && !user.isDemo) {
-        await deleteRegistro(registroId);
+        console.log("Eliminando de Firestore...");
+        await deleteRegistro(registroId); // Using the service function
       } else {
-        setLocalRegistros(localRegistros.filter(r => r.id !== registroId));
+        console.log("Eliminando de LocalStorage...");
+        const nuevosLocal = localRegistros.filter(r => String(r.id) !== String(registroId));
+        setLocalRegistros(nuevosLocal);
       }
+      showToast('Registro eliminado con éxito');
     } catch (error) {
       console.error("Error al eliminar:", error);
-      showToast('Error al eliminar el registro', 'error');
+      // Revertir si falla
+      setRegistros(originalRegistros);
+      showToast('Error al eliminar: ' + (error.message || 'Error desconocido'), 'error');
     }
   };
 
@@ -106,16 +125,16 @@ function App() {
       
       if (user && !user.isDemo) {
         console.log("Guardando en Firestore...");
+        const { id: _, ...dataToSave } = nuevoRegistro;
         if (editingRegistro) {
-          await updateRegistro(editingRegistro.id, nuevoRegistro);
+          await updateRegistro(editingRegistro.id, dataToSave);
         } else {
-          await addRegistro(user.uid, nuevoRegistro);
+          await addRegistro(user.uid, dataToSave);
         }
-        console.log("Firestore respondió con éxito.");
       } else {
         console.log("Guardando en LocalStorage (Modo Demo)...");
         if (editingRegistro) {
-          setLocalRegistros(localRegistros.map(r => r.id === editingRegistro.id ? { ...nuevoRegistro, id: editingRegistro.id } : r));
+          setLocalRegistros(localRegistros.map(r => String(r.id) === String(editingRegistro.id) ? { ...nuevoRegistro, id: editingRegistro.id } : r));
         } else {
           setLocalRegistros([...localRegistros, { ...nuevoRegistro, id: Date.now() }]);
         }
@@ -131,7 +150,7 @@ function App() {
       }, 100);
     } catch (error) {
       console.error("Error al guardar:", error);
-      showToast('Error al guardar el registro', 'error');
+      showToast('Error al guardar: ' + (error.message || 'Error desconocido'), 'error');
     }
   };
 
