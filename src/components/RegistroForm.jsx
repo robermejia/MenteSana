@@ -124,7 +124,7 @@ export default function RegistroForm({ onSave, editingRegistro = null, onCancelE
       ...formData,
       // Solo generamos un ID nuevo si no tenemos uno (modo demo nuevo)
       id: editingRegistro?.id || Date.now(),
-      fechaFormateada: new Date(formData.fecha).toLocaleDateString('es-ES')
+      fechaFormateada: formData.fecha.split('-').reverse().join('/')
     });
     // Reset basic fields
     setFormData(prev => ({
