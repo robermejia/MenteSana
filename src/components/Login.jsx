@@ -4,18 +4,24 @@ import { signInWithPopup } from 'firebase/auth';
 import { LogIn, Heart, ShieldCheck, Zap, BarChart3 } from 'lucide-react';
 
 export default function Login({ onLoginSuccess, showToast }) {
+  const [isLoggingIn, setIsLoggingIn] = React.useState(false);
+
   const handleGoogleLogin = async () => {
+    setIsLoggingIn(true);
     try {
-      // Nota: Esto fallará hasta que configures las credenciales reales en firebase.js
       const result = await signInWithPopup(auth, googleProvider);
       onLoginSuccess(result.user);
     } catch (error) {
       console.error("Error al iniciar sesión con Google:", error);
-      if (error.code === 'auth/invalid-api-key') {
-        showToast("Configuración requerida: Por favor, edita 'src/firebase.js' con tus credenciales de Firebase.", "error");
+      if (error.code === 'auth/invalid-api-key' || error.code === 'auth/unauthorized-domain') {
+        showToast("Configuración de Firebase requerida. Por favor, verifica tus credenciales y dominios autorizados.", "error");
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        showToast("Inicio de sesión cancelado.", "warning");
       } else {
         showToast("Ocurrió un error al intentar iniciar sesión.", "error");
       }
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
@@ -80,14 +86,29 @@ export default function Login({ onLoginSuccess, showToast }) {
           <button 
             onClick={handleGoogleLogin} 
             className="btn btn-primary" 
-            style={{ width: '100%', padding: '1rem', backgroundColor: '#fff', color: '#000', border: '1px solid #ddd' }}
+            disabled={isLoggingIn}
+            style={{ 
+              width: '100%', 
+              padding: '1rem', 
+              backgroundColor: '#fff', 
+              color: '#000', 
+              border: '1px solid #ddd',
+              opacity: isLoggingIn ? 0.7 : 1,
+              cursor: isLoggingIn ? 'not-allowed' : 'pointer'
+            }}
           >
-            <img 
-              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
-              alt="Google" 
-              style={{ width: '18px', marginRight: '10px' }} 
-            />
-            Continuar con Google
+            {isLoggingIn ? (
+              "Iniciando sesión..."
+            ) : (
+              <>
+                <img 
+                  src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
+                  alt="Google" 
+                  style={{ width: '18px', marginRight: '10px' }} 
+                />
+                Continuar con Google
+              </>
+            )}
           </button>
           
           <button 

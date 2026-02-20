@@ -22,13 +22,18 @@ function App() {
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
-      if (!user?.isDemo) {
+      // Solo actualizamos si no estamos en modo demo
+      // Si hay un usuario real de Firebase, lo preferimos
+      if (currentUser) {
         setUser(currentUser);
+      } else if (!user?.isDemo) {
+        // Si no hay usuario de Firebase y no estamos en demo, el usuario es null
+        setUser(null);
       }
       setLoading(false);
     });
     return () => unsubscribeAuth();
-  }, [user]);
+  }, []); // El array vacío asegura que solo se registre el listener una vez
 
   // Suscripción a Firestore cuando hay usuario real
   useEffect(() => {
@@ -75,6 +80,7 @@ function App() {
     try {
       await signOut(auth);
       setUser(null);
+      setRegistros([]); // Limpiar registros al cerrar sesión
       setEditingRegistro(null);
       setActiveTab('registro');
     } catch (error) {
