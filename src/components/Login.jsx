@@ -3,7 +3,7 @@ import { auth, googleProvider } from '../firebase';
 import { signInWithPopup } from 'firebase/auth';
 import { LogIn, Heart, ShieldCheck, Zap, BarChart3 } from 'lucide-react';
 
-export default function Login({ onLoginSuccess, showToast }) {
+export default function Login({ onLoginSuccess, showToast, onImport }) {
   const [isLoggingIn, setIsLoggingIn] = React.useState(false);
 
   const handleGoogleLogin = async () => {
@@ -118,6 +118,44 @@ export default function Login({ onLoginSuccess, showToast }) {
           >
             Entrar como Demo (Sin Google)
           </button>
+
+          <div style={{ position: 'relative', width: '100%' }}>
+            <button 
+              onClick={() => document.getElementById('import-input-login').click()} 
+              className="btn" 
+              style={{ 
+                width: '100%', 
+                backgroundColor: 'transparent', 
+                border: '1px dashed var(--border)',
+                color: 'var(--text-secondary)',
+                fontSize: '0.85rem'
+              }}
+            >
+              <LogIn size={14} />
+              Importar copia (.json)
+            </button>
+            <input 
+              id="import-input-login"
+              type="file" 
+              accept=".json"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    try {
+                      const json = JSON.parse(event.target.result);
+                      onImport(json);
+                    } catch (err) {
+                      showToast("Error al leer el archivo JSON: " + err.message, "error");
+                    }
+                  };
+                  reader.readAsText(file);
+                }
+              }}
+            />
+          </div>
         </div>
 
         <p style={{ marginTop: '2rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>

@@ -336,25 +336,38 @@ export default function Estadisticas({ registros, onEdit, onDelete, onExport, on
         </div>
       </div>
 
-      <div className="card" style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <Shield size={24} color="var(--success)" />
-          <h4 style={{ margin: 0 }}>Copia de Seguridad y Respaldo</h4>
+      <div className="card" style={{ 
+        marginTop: '2rem', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: '1.5rem',
+        border: '1px solid var(--accent-muted)',
+        background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.4) 100%)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <Shield size={24} color="var(--success)" />
+            <h4 style={{ margin: 0 }}>Gestión de Datos y Privacidad</h4>
+          </div>
+          <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', backgroundColor: 'rgba(16, 185, 129, 0.1)', padding: '0.2rem 0.5rem', borderRadius: '10px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+            Modo Seguro
+          </span>
         </div>
         
-        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-          Exporta tus datos a un archivo JSON para tener un respaldo local o impórtalos para restaurar una copia previa.
+        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', borderLeft: '3px solid var(--accent-primary)', paddingLeft: '1rem' }}>
+          Exporta tus datos a un archivo JSON para tener un respaldo local o impórtalos para restaurar una copia previa. 
+          <strong> Tus datos nunca abandonan tu dispositivo en modo demo.</strong>
         </p>
 
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-          <button onClick={onExport} className="btn btn-secondary" style={{ flex: 1, minWidth: '180px' }}>
+          <button onClick={onExport} className="btn btn-primary" style={{ flex: 1, minWidth: '180px' }}>
             <Download size={18} />
             Exportar datos (.json)
           </button>
           
-          <button onClick={() => fileInputRef.current?.click()} className="btn btn-secondary" style={{ flex: 1, minWidth: '180px' }}>
+          <button onClick={() => fileInputRef.current?.click()} className="btn btn-secondary" style={{ flex: 1, minWidth: '180px', border: '1px dashed var(--border)' }}>
             <Upload size={18} />
-            Importar datos (.json)
+            Importar respaldo
           </button>
           
           <input 

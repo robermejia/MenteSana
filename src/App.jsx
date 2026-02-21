@@ -3,7 +3,7 @@ import { useLocalStorage } from './hooks/useLocalStorage';
 import RegistroForm from './components/RegistroForm';
 import Estadisticas from './components/Estadisticas';
 import Login from './components/Login';
-import { Layout, PlusCircle, BarChart3, Heart, LogOut, User as UserIcon, CheckCircle2, AlertCircle, X, Info } from 'lucide-react';
+import { Layout, PlusCircle, BarChart3, Heart, LogOut, User as UserIcon, CheckCircle2, AlertCircle, X, Info, Download } from 'lucide-react';
 import { auth } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { addRegistro, subscribeToRegistros, updateRegistro, deleteRegistro } from './services/firestoreService';
@@ -206,6 +206,16 @@ function App() {
           id: item.id || Date.now() + Math.random()
         }));
         setLocalRegistros([...localRegistros, ...nuevosRegistros]);
+
+        // Si no hay usuario, iniciamos sesión como demo automáticamente
+        if (!user) {
+          handleLoginSuccess({
+            displayName: "Usuario Demo",
+            email: "demo@mentesana.com",
+            photoURL: "https://ui-avatars.com/api/?name=Usuario+Demo",
+            isDemo: true
+          });
+        }
       }
       
       showToast("Datos importados con éxito.");
@@ -225,7 +235,13 @@ function App() {
     }
 
     if (!user) {
-      return <Login onLoginSuccess={handleLoginSuccess} showToast={showToast} />;
+      return (
+        <Login 
+          onLoginSuccess={handleLoginSuccess} 
+          showToast={showToast} 
+          onImport={handleImportData}
+        />
+      );
     }
 
     return (
@@ -272,6 +288,16 @@ function App() {
                 <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <UserIcon size={20} />
                 </div>
+              )}
+              {user.isDemo && (
+                <button 
+                  onClick={handleExportData} 
+                  className="btn btn-secondary" 
+                  style={{ padding: '0.5rem', border: '1px dashed var(--accent-primary)', color: 'var(--accent-primary)' }} 
+                  title="Exportar respaldo"
+                >
+                  <Download size={18} />
+                </button>
               )}
               <button onClick={handleLogout} className="btn btn-secondary" style={{ padding: '0.5rem' }} title="Cerrar sesión">
                 <LogOut size={18} />
