@@ -37,7 +37,7 @@ export default function Login({ onLoginSuccess, showToast, onImport }) {
 
   return (
     <div className="fade-in" style={{ 
-      minHeight: '80vh', 
+      minHeight: '100dvh', 
       display: 'flex', 
       flexDirection: 'column', 
       justifyContent: 'center', 
